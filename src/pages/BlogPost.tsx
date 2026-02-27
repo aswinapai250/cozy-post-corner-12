@@ -1,78 +1,117 @@
 import { useParams, Link, Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { motion } from "framer-motion";
 import BlogHeader from "@/components/BlogHeader";
 import BlogFooter from "@/components/BlogFooter";
+import ReadingProgress from "@/components/ReadingProgress";
+import ScrollToTop from "@/components/ScrollToTop";
 import { getPostBySlug, posts } from "@/data/posts";
-import { ArrowLeft } from "lucide-react";
+import { Clock, ArrowRight } from "lucide-react";
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getPostBySlug(slug) : undefined;
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
   if (!post) return <Navigate to="/" replace />;
+
+  const related = posts.filter((p) => p.slug !== post.slug).slice(0, 2);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <ReadingProgress />
       <BlogHeader />
 
       {/* Hero image */}
-      <div className="w-full h-[340px] md:h-[440px] overflow-hidden">
-        <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="w-full h-[340px] md:h-[440px] overflow-hidden"
+      >
+        <img
+          src={post.image}
+          alt={post.title}
+          className="w-full h-full object-cover"
+        />
+      </motion.div>
 
       <main className="container max-w-2xl mx-auto px-4 flex-1">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mt-8 mb-6"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <ArrowLeft size={16} /> Back to all articles
-        </Link>
+          <div className="flex items-center gap-3 mt-10 mb-4">
+            <span className="inline-block px-3 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-widest bg-primary/10 text-primary">
+              {post.category}
+            </span>
+            <span className="text-xs text-muted-foreground">{post.date}</span>
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock size={12} /> {post.readTime}
+            </span>
+          </div>
 
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-xs font-semibold uppercase tracking-widest text-primary">{post.category}</span>
-          <span className="text-xs text-muted-foreground">{post.date}</span>
-          <span className="text-xs text-muted-foreground">· {post.readTime}</span>
-        </div>
+          <h1
+            className="text-3xl md:text-5xl font-bold leading-tight mb-8"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            {post.title}
+          </h1>
+        </motion.div>
 
-        <h1
-          className="text-3xl md:text-5xl font-bold leading-tight mb-8"
-          style={{ fontFamily: 'var(--font-heading)' }}
-        >
-          {post.title}
-        </h1>
-
-        <div className="prose-blog" dangerouslySetInnerHTML={{ __html: post.content }} />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="prose-blog"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
         {/* Related */}
         <hr className="my-12 border-border" />
         <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-6">
-          More articles
+          Continue reading
         </h3>
         <div className="grid md:grid-cols-2 gap-6 mb-12">
-          {posts
-            .filter((p) => p.slug !== post.slug)
-            .map((p) => (
-              <Link key={p.slug} to={`/blog/${p.slug}`} className="group block">
-                <div className="overflow-hidden rounded-lg mb-3">
-                  <img
-                    src={p.image}
-                    alt={p.title}
-                    className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                </div>
-                <span className="text-xs font-semibold uppercase tracking-widest text-primary">{p.category}</span>
+          {related.map((p) => (
+            <Link
+              key={p.slug}
+              to={`/blog/${p.slug}`}
+              className="group block rounded-xl overflow-hidden bg-card border border-border hover:shadow-lg transition-shadow duration-300"
+            >
+              <div className="overflow-hidden">
+                <img
+                  src={p.image}
+                  alt={p.title}
+                  className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  loading="lazy"
+                />
+              </div>
+              <div className="p-4">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-widest bg-primary/10 text-primary mb-2">
+                  {p.category}
+                </span>
                 <h4
-                  className="text-lg font-semibold mt-1 group-hover:text-primary transition-colors"
-                  style={{ fontFamily: 'var(--font-heading)' }}
+                  className="text-lg font-semibold group-hover:text-primary transition-colors"
+                  style={{ fontFamily: "var(--font-heading)" }}
                 >
                   {p.title}
                 </h4>
-              </Link>
-            ))}
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-primary mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Read article <ArrowRight size={12} />
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       </main>
 
       <BlogFooter />
+      <ScrollToTop />
     </div>
   );
 };
