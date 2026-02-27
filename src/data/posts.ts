@@ -1,6 +1,9 @@
 import blogNature from "@/assets/blog-nature.jpg";
 import blogArchitecture from "@/assets/blog-architecture.jpg";
 import blogFood from "@/assets/blog-food.jpg";
+import blogBooks from "@/assets/blog-books.jpg";
+import blogMusic from "@/assets/blog-music.jpg";
+import blogCraft from "@/assets/blog-craft.jpg";
 
 export interface BlogPost {
   slug: string;
